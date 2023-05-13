@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: healthcare_forum
+ui:
+  bundled: "../ui/dist.zip"
+happ_manifest:
+  bundled: "./healthcare_forum.happ"
