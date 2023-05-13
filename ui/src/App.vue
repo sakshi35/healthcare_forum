@@ -20,11 +20,8 @@
         <CreateListing v-else-if="selectedTab === 'createBlog'" creator={}></CreateListing>
         <CreateProfile v-else-if="selectedTab === 'createProfile'" person={}></CreateProfile>
         <AllProfiles v-else-if="selectedTab === 'allProfiles'" person={}></AllProfiles>
+        <CreateListingFormat listing-hash={}></CreateListingFormat>
       </div>
-    </div>
-    <div>
-      <CreateListingFormat listing-hash={}></CreateListingFormat>
-      <ListingsByCreator :author="authorData"></ListingsByCreator>
     </div>
   </div>
 </template>
@@ -60,19 +57,18 @@ export default defineComponent({
       client: undefined,
       loading: true,
       selectedTab: 'allBlogs',
-      authorData: this.myPubKey,
+      authorData: {},
     };
   },
   async mounted() {
     // We pass '' as url because it will dynamically be replaced in launcher environments
     this.client = await AppAgentWebsocket.connect('', 'healthcare_forum');
-
+    this.authorData = this.client.myPubKey;
     this.loading = false;
   },
   provide() {
     return {
       client: computed(() => this.client),
-      myPubKey: computed(() => this.client?.myPubKey),
     };
   },
 });
