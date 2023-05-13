@@ -21,6 +21,7 @@
         <CreateProfile v-else-if="selectedTab === 'createProfile'" person={}></CreateProfile>
         <AllProfiles v-else-if="selectedTab === 'allProfiles'" person={}></AllProfiles>
         <CreateListingFormat listing-hash={}></CreateListingFormat>
+        <ListingsByCreator :author="authorData"></ListingsByCreator>
       </div>
     </div>
   </div>
@@ -69,6 +70,7 @@ export default defineComponent({
   provide() {
     return {
       client: computed(() => this.client),
+      //myPubKey: computed(() => this.client?.myPubKey),
     };
   },
 });
