@@ -1,38 +1,30 @@
 <template>
   <div>
+    <div>
+      <!-- Navigation bar -->
+      <nav>
+        <ul>
+          <li @click="selectedTab = 'allBlogs'" :class="{ active: selectedTab === 'allBlogs' }">All Blogs</li>
+          <li @click="selectedTab = 'createBlog'" :class="{ active: selectedTab === 'createBlog' }">Create Blog</li>
+          <li @click="selectedTab = 'allProfiles'" :class="{ active: selectedTab === 'allProfiles' }">All Profiles</li>
+          <li @click="selectedTab = 'createProfile'" :class="{ active: selectedTab === 'createProfile' }">Create Profile</li>
+        </ul>
+      </nav>
+    </div>
     <div v-if="loading">
       <mwc-circular-progress indeterminate></mwc-circular-progress>
     </div>
     <div v-else>
       <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-        <h2>EDIT ME! Add the components of your app here.</h2>
-        
-        <span>Look in the <code>ui/src/DNA/ZOME</code> folders for UI elements that are generated with <code>hc scaffold entry-type</code>, <code>hc scaffold collection</code> and <code>hc scaffold link-type</code> and add them here as appropriate.</span>
-        
-        <span>For example, if you have scaffolded a "todos" dna, a "todos" zome, a "todo_item" entry type, and a collection called "all_todos", you might want to add an element here to create and list your todo items, with the generated <code>ui/src/todos/todos/AllTodos.vue</code> and <code>ui/src/todos/todos/CreateTodo.vue</code> elements.</span>
-          
-        <span>So, to use those elements here:</span>
-        <ol>
-          <li>Import the elements with:
-          <pre>
-import AllTodos from './todos/todos/AllTodos.vue';
-import CreateTodo from './todos/todos/CreateTodo.vue';
-          </pre>
-          </li>
-          <li>Add it into the subcomponents for the `App` component: 
-            <pre>
-export default defineComponent({
-  components: {
-    // Add your subcomponents here
-    AllTodos,
-    CreateTodo
-  },
-  ...
-            </pre>
-          </li>
-          <li>Replace this "EDIT ME!" section with <code>&lt;CreateTodo&gt;&lt;/CreateTodo&gt;&lt;AllTodos&gt;&lt;/AllTodos&gt;</code>.</li>
-        </ol>
+        <AllListings v-if="selectedTab === 'allBlogs'"></AllListings>
+        <CreateListing v-else-if="selectedTab === 'createBlog'" creator={}></CreateListing>
+        <CreateProfile v-else-if="selectedTab === 'createProfile'" person={}></CreateProfile>
+        <AllProfiles v-else-if="selectedTab === 'allProfiles'" person={}></AllProfiles>
       </div>
+    </div>
+    <div>
+      <CreateListingFormat listing-hash={}></CreateListingFormat>
+      <ListingsByCreator :author="authorData"></ListingsByCreator>
     </div>
   </div>
 </template>
@@ -40,18 +32,35 @@ export default defineComponent({
 import { defineComponent, computed } from 'vue';
 import { AppAgentClient, AppAgentWebsocket } from '@holochain/client';
 import '@material/mwc-circular-progress';
+import AllListings from './blog/blog/AllListings.vue';
+import CreateListing from './blog/blog/CreateListing.vue';
+import CreateProfile from './blog/blog/CreateProfile.vue';
+import AllProfiles from './blog/blog/AllProfiles.vue';
+import CreateListingFormat from './blog/blog/CreateListingFormat.vue';
+import ListingsByCreator from './blog/blog/ListingsByCreator.vue';
+
 
 export default defineComponent({
   components: {
     // Add your subcomponents here
+    AllListings,
+    CreateListing,
+    CreateProfile,
+    AllProfiles,
+    CreateListingFormat,
+    ListingsByCreator,
   },
   data(): {
     client: AppAgentClient | undefined;
     loading: boolean;
+    selectedTab: 'allBlogs' | 'createBlog' | 'allProfiles' | 'createProfile';
+    authorData: Object;
   } {
     return {
       client: undefined,
       loading: true,
+      selectedTab: 'allBlogs',
+      authorData: this.myPubKey,
     };
   },
   async mounted() {
@@ -63,7 +72,28 @@ export default defineComponent({
   provide() {
     return {
       client: computed(() => this.client),
+      myPubKey: computed(() => this.client?.myPubKey),
     };
   },
 });
 </script>
+<style>
+nav ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+
+nav li {
+  margin-right: 10px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+}
+
+nav li.active {
+  background-color: #ccc;
+  font-weight: bold;
+}
+
+</style>

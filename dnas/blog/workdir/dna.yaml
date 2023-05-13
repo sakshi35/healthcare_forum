@@ -1,0 +1,19 @@
+---
+manifest_version: "1"
+name: blog
+integrity:
+  network_seed: ~
+  properties: ~
+  origin_time: 1683909920739216
+  zomes:
+    - name: blog_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/blog_integrity.wasm"
+      dependencies: ~
+coordinator:
+  zomes:
+    - name: blog
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/blog.wasm"
+      dependencies:
+        - name: blog_integrity
