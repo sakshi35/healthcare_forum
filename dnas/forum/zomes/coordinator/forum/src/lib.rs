@@ -1,14 +1,16 @@
+pub mod my_h_blogs;
+pub mod all_h_blogs;
+pub mod h_blog;
+pub mod my_health_blogs;
+pub mod all_health_blogs;
+pub mod health_blog;
 pub mod my_profiles;
-pub mod all_profiles;
-pub mod profile;
-pub mod listing_format;
-pub mod listings_by_creator;
-pub mod all_listings;
-pub mod listing;
-pub mod all_posts;
-pub mod name;
+pub mod all_health_forum;
+pub mod health_forum;
+pub mod all_people_profiles;
+pub mod people_profile;
 use hdk::prelude::*;
-use blog_integrity::*;
+use forum_integrity::*;
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     Ok(InitCallbackResult::Pass)

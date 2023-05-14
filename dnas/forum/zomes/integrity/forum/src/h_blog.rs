@@ -1,34 +1,33 @@
 use hdi::prelude::*;
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
-pub struct Profile {
-    pub person: AgentPubKey,
-    pub name: String,
-    pub location: String,
-    pub bio: String,
+pub struct HBlog {
+    pub creator: AgentPubKey,
+    pub title: String,
+    pub content: String,
 }
-pub fn validate_create_profile(
+pub fn validate_create_h_blog(
     _action: EntryCreationAction,
-    _profile: Profile,
+    _h_blog: HBlog,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_update_profile(
+pub fn validate_update_h_blog(
     _action: Update,
-    _profile: Profile,
+    _h_blog: HBlog,
     _original_action: EntryCreationAction,
-    _original_profile: Profile,
+    _original_h_blog: HBlog,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_profile(
+pub fn validate_delete_h_blog(
     _action: Delete,
     _original_action: EntryCreationAction,
-    _original_profile: Profile,
+    _original_h_blog: HBlog,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_create_link_person_to_profiles(
+pub fn validate_create_link_creator_to_h_blogs(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -36,7 +35,7 @@ pub fn validate_create_link_person_to_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _h_blog: crate::HBlog = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -47,7 +46,7 @@ pub fn validate_create_link_person_to_profiles(
         )?;
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_person_to_profiles(
+pub fn validate_delete_link_creator_to_h_blogs(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -56,11 +55,11 @@ pub fn validate_delete_link_person_to_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("PersonToProfiles links cannot be deleted"),
+            String::from("CreatorToHBlogs links cannot be deleted"),
         ),
     )
 }
-pub fn validate_create_link_profile_updates(
+pub fn validate_create_link_h_blog_updates(
     _action: CreateLink,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -68,7 +67,7 @@ pub fn validate_create_link_profile_updates(
 ) -> ExternResult<ValidateCallbackResult> {
     let action_hash = ActionHash::from(base_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _h_blog: crate::HBlog = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -79,7 +78,7 @@ pub fn validate_create_link_profile_updates(
         )?;
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _h_blog: crate::HBlog = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -90,7 +89,7 @@ pub fn validate_create_link_profile_updates(
         )?;
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_profile_updates(
+pub fn validate_delete_link_h_blog_updates(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -99,11 +98,11 @@ pub fn validate_delete_link_profile_updates(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("ProfileUpdates links cannot be deleted"),
+            String::from("HBlogUpdates links cannot be deleted"),
         ),
     )
 }
-pub fn validate_create_link_all_profiles(
+pub fn validate_create_link_all_h_blogs(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -111,7 +110,7 @@ pub fn validate_create_link_all_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _h_blog: crate::HBlog = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -122,7 +121,7 @@ pub fn validate_create_link_all_profiles(
         )?;
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_all_profiles(
+pub fn validate_delete_link_all_h_blogs(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -131,11 +130,11 @@ pub fn validate_delete_link_all_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("AllProfiles links cannot be deleted"),
+            String::from("AllHBlogs links cannot be deleted"),
         ),
     )
 }
-pub fn validate_create_link_my_profiles(
+pub fn validate_create_link_my_h_blogs(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -144,7 +143,7 @@ pub fn validate_create_link_my_profiles(
     // Check the entry type for the given action hash
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _h_blog: crate::HBlog = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -156,16 +155,12 @@ pub fn validate_create_link_my_profiles(
     // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_my_profiles(
+pub fn validate_delete_link_my_h_blogs(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(
-        ValidateCallbackResult::Invalid(
-            String::from("MyProfiles links cannot be deleted"),
-        ),
-    )
+    Ok(ValidateCallbackResult::Invalid(String::from("MyHBlogs links cannot be deleted")))
 }

@@ -2,10 +2,18 @@
   <mwc-snackbar ref="create-error"></mwc-snackbar>
 
   <div style="display: flex; flex-direction: column">
-    <span style="font-size: 18px">Create Profile</span>
+    <span style="font-size: 18px">Create People Profile</span>
   
     <div style="margin-bottom: 16px">
-      <mwc-textfield outlined label="Name" :value="name" @input="name = $event.target.value" required></mwc-textfield>
+      <mwc-textfield outlined label="First Name" :value="firstName" @input="firstName = $event.target.value" required></mwc-textfield>
+    </div>
+
+    <div style="margin-bottom: 16px">
+      <mwc-textfield outlined label="Last Name" :value="lastName" @input="lastName = $event.target.value" required></mwc-textfield>
+    </div>
+
+    <div style="margin-bottom: 16px">
+      <mwc-textfield outlined label="User Name" :value="userName" @input="userName = $event.target.value" required></mwc-textfield>
     </div>
 
     <div style="margin-bottom: 16px">
@@ -19,16 +27,16 @@
   
     <mwc-button 
       raised
-      label="Create Profile"
-      :disabled="!isProfileValid"
-      @click="createProfile"
+      label="Create People Profile"
+      :disabled="!isPeopleProfileValid"
+      @click="createPeopleProfile"
     ></mwc-button>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent, inject, ComputedRef } from 'vue';
 import { AppAgentClient, Record, AgentPubKey, EntryHash, ActionHash, DnaHash } from '@holochain/client';
-import { Profile } from './types';
+import { PeopleProfile } from './types';
 import '@material/mwc-button';
 import '@material/mwc-icon-button';
 import '@material/mwc-snackbar';
@@ -38,65 +46,69 @@ import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 export default defineComponent({
   data(): {
-    name: string;
+    firstName: string;
+    lastName: string;
+    userName: string;
     location: string;
     bio: string;
   } {
     return { 
-      name: '',
+      firstName: '',
+      lastName: '',
+      userName: '',
       location: '',
       bio: '',
     }
   },
-  props: {
-    person: {
+
+  props: {    person: {
       type: null,
       required: true
     },
-  },
-  computed: {
-    isProfileValid() {
-    return true && this.name !== '' && this.location !== '' && this.bio !== '';
+
+  },  computed: {
+    isPeopleProfileValid() {
+    return true && this.firstName !== '' && this.lastName !== '' && this.userName !== '' && this.location !== '' && this.bio !== '';
     },
   },
   mounted() {
     if (this.person === undefined) {
-      throw new Error(`The person input is required for the CreateProfile element`);
+      throw new Error(`The person input is required for the CreatePeopleProfile element`);
     }
   },
   methods: {
-    async createProfile() {
-      const profile: Profile = { 
-        //person: this.person!,
-
+    async createPeopleProfile() {
+      const peopleProfile: PeopleProfile = { 
         person: this.client.myPubKey!,
-        name: this.name!,
+
+        first_name: this.firstName!,
+
+        last_name: this.lastName!,
+
+        user_name: this.userName!,
 
         location: this.location!,
 
         bio: this.bio!,
       };
-      console.log("profile bio: "+profile.bio);
-      console.log("person: "+profile.person);
 
       try {
         const record: Record = await this.client.callZome({
           cap_secret: null,
-          role_name: 'blog',
-          zome_name: 'blog',
-          fn_name: 'create_profile',
-          payload: profile,
+          role_name: 'forum',
+          zome_name: 'forum',
+          fn_name: 'create_people_profile',
+          payload: peopleProfile,
         });
-        this.$emit('profile-created', profile.name);
-        alert("Profile created successfully!!!");
+        this.$emit('people-profile-created', record.signed_action.hashed.hash);
       } catch (e: any) {
         const errorSnackbar = this.$refs['create-error'] as Snackbar;
-        errorSnackbar.labelText = `Error creating the profile: ${e.data.data}`;
+        errorSnackbar.labelText = `Error creating the people profile: ${e.data.data}`;
         errorSnackbar.show();
       }
     },
   },
-  emits: ['profile-created'],
+  emits: ['people-profile-created'],
   setup() {
     const client = (inject('client') as ComputedRef<AppAgentClient>).value;
     return {

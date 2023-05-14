@@ -22,6 +22,8 @@ pub fn create_profile(profile: Profile) -> ExternResult<Record> {
         LinkTypes::AllProfiles,
         (),
     )?;
+    let my_agent_pub_key = agent_info()?.agent_latest_pubkey;
+    create_link(my_agent_pub_key, profile_hash.clone(), LinkTypes::MyProfiles, ())?;
     Ok(record)
 }
 #[hdk_extern]

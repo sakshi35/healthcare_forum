@@ -1,34 +1,36 @@
 use hdi::prelude::*;
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
-pub struct Profile {
+pub struct PeopleProfile {
     pub person: AgentPubKey,
-    pub name: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub user_name: String,
     pub location: String,
     pub bio: String,
 }
-pub fn validate_create_profile(
+pub fn validate_create_people_profile(
     _action: EntryCreationAction,
-    _profile: Profile,
+    _people_profile: PeopleProfile,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_update_profile(
+pub fn validate_update_people_profile(
     _action: Update,
-    _profile: Profile,
+    _people_profile: PeopleProfile,
     _original_action: EntryCreationAction,
-    _original_profile: Profile,
+    _original_people_profile: PeopleProfile,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_profile(
+pub fn validate_delete_people_profile(
     _action: Delete,
     _original_action: EntryCreationAction,
-    _original_profile: Profile,
+    _original_people_profile: PeopleProfile,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_create_link_person_to_profiles(
+pub fn validate_create_link_person_to_people_profiles(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -36,7 +38,7 @@ pub fn validate_create_link_person_to_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _people_profile: crate::PeopleProfile = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -47,7 +49,7 @@ pub fn validate_create_link_person_to_profiles(
         )?;
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_person_to_profiles(
+pub fn validate_delete_link_person_to_people_profiles(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -56,11 +58,11 @@ pub fn validate_delete_link_person_to_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("PersonToProfiles links cannot be deleted"),
+            String::from("PersonToPeopleProfiles links cannot be deleted"),
         ),
     )
 }
-pub fn validate_create_link_profile_updates(
+pub fn validate_create_link_people_profile_updates(
     _action: CreateLink,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -68,7 +70,7 @@ pub fn validate_create_link_profile_updates(
 ) -> ExternResult<ValidateCallbackResult> {
     let action_hash = ActionHash::from(base_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _people_profile: crate::PeopleProfile = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -79,7 +81,7 @@ pub fn validate_create_link_profile_updates(
         )?;
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _people_profile: crate::PeopleProfile = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -90,7 +92,7 @@ pub fn validate_create_link_profile_updates(
         )?;
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_profile_updates(
+pub fn validate_delete_link_people_profile_updates(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -99,11 +101,11 @@ pub fn validate_delete_link_profile_updates(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("ProfileUpdates links cannot be deleted"),
+            String::from("PeopleProfileUpdates links cannot be deleted"),
         ),
     )
 }
-pub fn validate_create_link_all_profiles(
+pub fn validate_create_link_all_people_profiles(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -111,7 +113,7 @@ pub fn validate_create_link_all_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _people_profile: crate::PeopleProfile = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -122,7 +124,7 @@ pub fn validate_create_link_all_profiles(
         )?;
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_all_profiles(
+pub fn validate_delete_link_all_people_profiles(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -131,7 +133,7 @@ pub fn validate_delete_link_all_profiles(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("AllProfiles links cannot be deleted"),
+            String::from("AllPeopleProfiles links cannot be deleted"),
         ),
     )
 }
@@ -141,10 +143,9 @@ pub fn validate_create_link_my_profiles(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    // Check the entry type for the given action hash
     let action_hash = ActionHash::from(target_address);
     let record = must_get_valid_record(action_hash)?;
-    let _profile: crate::Profile = record
+    let _people_profile: crate::PeopleProfile = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -153,7 +154,6 @@ pub fn validate_create_link_my_profiles(
                 WasmErrorInner::Guest(String::from("Linked action must reference an entry"))
             ),
         )?;
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_my_profiles(

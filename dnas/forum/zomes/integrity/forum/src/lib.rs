@@ -1,37 +1,42 @@
-pub mod profile;
-pub use profile::*;
-pub mod listing_format;
-pub use listing_format::*;
-pub mod listing;
-pub use listing::*;
-pub mod name;
-pub use name::*;
+pub mod h_blog;
+pub use h_blog::*;
+pub mod health_blog;
+pub use health_blog::*;
+pub mod health_forum;
+pub use health_forum::*;
+pub mod people_profile;
+pub use people_profile::*;
 use hdi::prelude::*;
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
-    Name(Name),
-    Listing(Listing),
-    ListingFormat(ListingFormat),
-    Profile(Profile),
+    PeopleProfile(PeopleProfile),
+    HealthForum(HealthForum),
+    HealthBlog(HealthBlog),
+    HBlog(HBlog),
 }
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
 pub enum LinkTypes {
-    NameUpdates,
-    AllPosts,
-    CreatorToListings,
-    ListingUpdates,
-    AllListings,
-    ListingsByCreator,
-    ListingToListingFormats,
-    ListingFormatUpdates,
-    PersonToProfiles,
-    ProfileUpdates,
-    AllProfiles,
+    PersonToPeopleProfiles,
+    PeopleProfileUpdates,
+    AllPeopleProfiles,
+    CreatorToHealthForums,
+    PeopleProfileToHealthForums,
+    HealthForumUpdates,
+    AllHealthForum,
     MyProfiles,
+    CreatorToHealthBlogs,
+    PeopleProfileToHealthBlogs,
+    HealthBlogUpdates,
+    AllHealthBlogs,
+    MyHealthBlogs,
+    CreatorToHBlogs,
+    HBlogUpdates,
+    AllHBlogs,
+    MyHBlogs,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -52,56 +57,56 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             match store_entry {
                 OpEntry::CreateEntry { app_entry, action } => {
                     match app_entry {
-                        EntryTypes::Name(name) => {
-                            validate_create_name(
+                        EntryTypes::PeopleProfile(people_profile) => {
+                            validate_create_people_profile(
                                 EntryCreationAction::Create(action),
-                                name,
+                                people_profile,
                             )
                         }
-                        EntryTypes::Listing(listing) => {
-                            validate_create_listing(
+                        EntryTypes::HealthForum(health_forum) => {
+                            validate_create_health_forum(
                                 EntryCreationAction::Create(action),
-                                listing,
+                                health_forum,
                             )
                         }
-                        EntryTypes::ListingFormat(listing_format) => {
-                            validate_create_listing_format(
+                        EntryTypes::HealthBlog(health_blog) => {
+                            validate_create_health_blog(
                                 EntryCreationAction::Create(action),
-                                listing_format,
+                                health_blog,
                             )
                         }
-                        EntryTypes::Profile(profile) => {
-                            validate_create_profile(
+                        EntryTypes::HBlog(h_blog) => {
+                            validate_create_h_blog(
                                 EntryCreationAction::Create(action),
-                                profile,
+                                h_blog,
                             )
                         }
                     }
                 }
                 OpEntry::UpdateEntry { app_entry, action, .. } => {
                     match app_entry {
-                        EntryTypes::Name(name) => {
-                            validate_create_name(
+                        EntryTypes::PeopleProfile(people_profile) => {
+                            validate_create_people_profile(
                                 EntryCreationAction::Update(action),
-                                name,
+                                people_profile,
                             )
                         }
-                        EntryTypes::Listing(listing) => {
-                            validate_create_listing(
+                        EntryTypes::HealthForum(health_forum) => {
+                            validate_create_health_forum(
                                 EntryCreationAction::Update(action),
-                                listing,
+                                health_forum,
                             )
                         }
-                        EntryTypes::ListingFormat(listing_format) => {
-                            validate_create_listing_format(
+                        EntryTypes::HealthBlog(health_blog) => {
+                            validate_create_health_blog(
                                 EntryCreationAction::Update(action),
-                                listing_format,
+                                health_blog,
                             )
                         }
-                        EntryTypes::Profile(profile) => {
-                            validate_create_profile(
+                        EntryTypes::HBlog(h_blog) => {
+                            validate_create_h_blog(
                                 EntryCreationAction::Update(action),
-                                profile,
+                                h_blog,
                             )
                         }
                     }
@@ -119,44 +124,47 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 } => {
                     match (app_entry, original_app_entry) {
                         (
-                            EntryTypes::Profile(profile),
-                            EntryTypes::Profile(original_profile),
+                            EntryTypes::HBlog(h_blog),
+                            EntryTypes::HBlog(original_h_blog),
                         ) => {
-                            validate_update_profile(
+                            validate_update_h_blog(
                                 action,
-                                profile,
+                                h_blog,
                                 original_action,
-                                original_profile,
+                                original_h_blog,
                             )
                         }
                         (
-                            EntryTypes::ListingFormat(listing_format),
-                            EntryTypes::ListingFormat(original_listing_format),
+                            EntryTypes::HealthBlog(health_blog),
+                            EntryTypes::HealthBlog(original_health_blog),
                         ) => {
-                            validate_update_listing_format(
+                            validate_update_health_blog(
                                 action,
-                                listing_format,
+                                health_blog,
                                 original_action,
-                                original_listing_format,
+                                original_health_blog,
                             )
                         }
                         (
-                            EntryTypes::Listing(listing),
-                            EntryTypes::Listing(original_listing),
+                            EntryTypes::HealthForum(health_forum),
+                            EntryTypes::HealthForum(original_health_forum),
                         ) => {
-                            validate_update_listing(
+                            validate_update_health_forum(
                                 action,
-                                listing,
+                                health_forum,
                                 original_action,
-                                original_listing,
+                                original_health_forum,
                             )
                         }
-                        (EntryTypes::Name(name), EntryTypes::Name(original_name)) => {
-                            validate_update_name(
+                        (
+                            EntryTypes::PeopleProfile(people_profile),
+                            EntryTypes::PeopleProfile(original_people_profile),
+                        ) => {
+                            validate_update_people_profile(
                                 action,
-                                name,
+                                people_profile,
                                 original_action,
-                                original_name,
+                                original_people_profile,
                             )
                         }
                         _ => {
@@ -176,21 +184,29 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             match delete_entry {
                 OpDelete::Entry { original_action, original_app_entry, action } => {
                     match original_app_entry {
-                        EntryTypes::Name(name) => {
-                            validate_delete_name(action, original_action, name)
-                        }
-                        EntryTypes::Listing(listing) => {
-                            validate_delete_listing(action, original_action, listing)
-                        }
-                        EntryTypes::ListingFormat(listing_format) => {
-                            validate_delete_listing_format(
+                        EntryTypes::PeopleProfile(people_profile) => {
+                            validate_delete_people_profile(
                                 action,
                                 original_action,
-                                listing_format,
+                                people_profile,
                             )
                         }
-                        EntryTypes::Profile(profile) => {
-                            validate_delete_profile(action, original_action, profile)
+                        EntryTypes::HealthForum(health_forum) => {
+                            validate_delete_health_forum(
+                                action,
+                                original_action,
+                                health_forum,
+                            )
+                        }
+                        EntryTypes::HealthBlog(health_blog) => {
+                            validate_delete_health_blog(
+                                action,
+                                original_action,
+                                health_blog,
+                            )
+                        }
+                        EntryTypes::HBlog(h_blog) => {
+                            validate_delete_h_blog(action, original_action, h_blog)
                         }
                     }
                 }
@@ -205,88 +221,56 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             action,
         } => {
             match link_type {
-                LinkTypes::NameUpdates => {
-                    validate_create_link_name_updates(
+                LinkTypes::PersonToPeopleProfiles => {
+                    validate_create_link_person_to_people_profiles(
                         action,
                         base_address,
                         target_address,
                         tag,
                     )
                 }
-                LinkTypes::AllPosts => {
-                    validate_create_link_all_posts(
+                LinkTypes::PeopleProfileUpdates => {
+                    validate_create_link_people_profile_updates(
                         action,
                         base_address,
                         target_address,
                         tag,
                     )
                 }
-                LinkTypes::CreatorToListings => {
-                    validate_create_link_creator_to_listings(
+                LinkTypes::AllPeopleProfiles => {
+                    validate_create_link_all_people_profiles(
                         action,
                         base_address,
                         target_address,
                         tag,
                     )
                 }
-                LinkTypes::ListingUpdates => {
-                    validate_create_link_listing_updates(
+                LinkTypes::CreatorToHealthForums => {
+                    validate_create_link_creator_to_health_forums(
                         action,
                         base_address,
                         target_address,
                         tag,
                     )
                 }
-                LinkTypes::AllListings => {
-                    validate_create_link_all_listings(
+                LinkTypes::PeopleProfileToHealthForums => {
+                    validate_create_link_people_profile_to_health_forums(
                         action,
                         base_address,
                         target_address,
                         tag,
                     )
                 }
-                LinkTypes::ListingsByCreator => {
-                    validate_create_link_listings_by_creator(
+                LinkTypes::HealthForumUpdates => {
+                    validate_create_link_health_forum_updates(
                         action,
                         base_address,
                         target_address,
                         tag,
                     )
                 }
-                LinkTypes::ListingToListingFormats => {
-                    validate_create_link_listing_to_listing_formats(
-                        action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::ListingFormatUpdates => {
-                    validate_create_link_listing_format_updates(
-                        action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::PersonToProfiles => {
-                    validate_create_link_person_to_profiles(
-                        action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::ProfileUpdates => {
-                    validate_create_link_profile_updates(
-                        action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::AllProfiles => {
-                    validate_create_link_all_profiles(
+                LinkTypes::AllHealthForum => {
+                    validate_create_link_all_health_forum(
                         action,
                         base_address,
                         target_address,
@@ -295,6 +279,78 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::MyProfiles => {
                     validate_create_link_my_profiles(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::CreatorToHealthBlogs => {
+                    validate_create_link_creator_to_health_blogs(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::PeopleProfileToHealthBlogs => {
+                    validate_create_link_people_profile_to_health_blogs(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::HealthBlogUpdates => {
+                    validate_create_link_health_blog_updates(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllHealthBlogs => {
+                    validate_create_link_all_health_blogs(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::MyHealthBlogs => {
+                    validate_create_link_my_health_blogs(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::CreatorToHBlogs => {
+                    validate_create_link_creator_to_h_blogs(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::HBlogUpdates => {
+                    validate_create_link_h_blog_updates(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllHBlogs => {
+                    validate_create_link_all_h_blogs(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::MyHBlogs => {
+                    validate_create_link_my_h_blogs(
                         action,
                         base_address,
                         target_address,
@@ -312,8 +368,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             action,
         } => {
             match link_type {
-                LinkTypes::NameUpdates => {
-                    validate_delete_link_name_updates(
+                LinkTypes::PersonToPeopleProfiles => {
+                    validate_delete_link_person_to_people_profiles(
                         action,
                         original_action,
                         base_address,
@@ -321,8 +377,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
-                LinkTypes::AllPosts => {
-                    validate_delete_link_all_posts(
+                LinkTypes::PeopleProfileUpdates => {
+                    validate_delete_link_people_profile_updates(
                         action,
                         original_action,
                         base_address,
@@ -330,8 +386,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
-                LinkTypes::CreatorToListings => {
-                    validate_delete_link_creator_to_listings(
+                LinkTypes::AllPeopleProfiles => {
+                    validate_delete_link_all_people_profiles(
                         action,
                         original_action,
                         base_address,
@@ -339,8 +395,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
-                LinkTypes::ListingUpdates => {
-                    validate_delete_link_listing_updates(
+                LinkTypes::CreatorToHealthForums => {
+                    validate_delete_link_creator_to_health_forums(
                         action,
                         original_action,
                         base_address,
@@ -348,8 +404,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
-                LinkTypes::AllListings => {
-                    validate_delete_link_all_listings(
+                LinkTypes::PeopleProfileToHealthForums => {
+                    validate_delete_link_people_profile_to_health_forums(
                         action,
                         original_action,
                         base_address,
@@ -357,8 +413,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
-                LinkTypes::ListingsByCreator => {
-                    validate_delete_link_listings_by_creator(
+                LinkTypes::HealthForumUpdates => {
+                    validate_delete_link_health_forum_updates(
                         action,
                         original_action,
                         base_address,
@@ -366,44 +422,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
-                LinkTypes::ListingToListingFormats => {
-                    validate_delete_link_listing_to_listing_formats(
-                        action,
-                        original_action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::ListingFormatUpdates => {
-                    validate_delete_link_listing_format_updates(
-                        action,
-                        original_action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::PersonToProfiles => {
-                    validate_delete_link_person_to_profiles(
-                        action,
-                        original_action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::ProfileUpdates => {
-                    validate_delete_link_profile_updates(
-                        action,
-                        original_action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::AllProfiles => {
-                    validate_delete_link_all_profiles(
+                LinkTypes::AllHealthForum => {
+                    validate_delete_link_all_health_forum(
                         action,
                         original_action,
                         base_address,
@@ -420,34 +440,115 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::CreatorToHealthBlogs => {
+                    validate_delete_link_creator_to_health_blogs(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::PeopleProfileToHealthBlogs => {
+                    validate_delete_link_people_profile_to_health_blogs(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::HealthBlogUpdates => {
+                    validate_delete_link_health_blog_updates(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllHealthBlogs => {
+                    validate_delete_link_all_health_blogs(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::MyHealthBlogs => {
+                    validate_delete_link_my_health_blogs(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::CreatorToHBlogs => {
+                    validate_delete_link_creator_to_h_blogs(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::HBlogUpdates => {
+                    validate_delete_link_h_blog_updates(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::AllHBlogs => {
+                    validate_delete_link_all_h_blogs(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::MyHBlogs => {
+                    validate_delete_link_my_h_blogs(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::StoreRecord(store_record) => {
             match store_record {
                 OpRecord::CreateEntry { app_entry, action } => {
                     match app_entry {
-                        EntryTypes::Name(name) => {
-                            validate_create_name(
+                        EntryTypes::PeopleProfile(people_profile) => {
+                            validate_create_people_profile(
                                 EntryCreationAction::Create(action),
-                                name,
+                                people_profile,
                             )
                         }
-                        EntryTypes::Listing(listing) => {
-                            validate_create_listing(
+                        EntryTypes::HealthForum(health_forum) => {
+                            validate_create_health_forum(
                                 EntryCreationAction::Create(action),
-                                listing,
+                                health_forum,
                             )
                         }
-                        EntryTypes::ListingFormat(listing_format) => {
-                            validate_create_listing_format(
+                        EntryTypes::HealthBlog(health_blog) => {
+                            validate_create_health_blog(
                                 EntryCreationAction::Create(action),
-                                listing_format,
+                                health_blog,
                             )
                         }
-                        EntryTypes::Profile(profile) => {
-                            validate_create_profile(
+                        EntryTypes::HBlog(h_blog) => {
+                            validate_create_h_blog(
                                 EntryCreationAction::Create(action),
-                                profile,
+                                h_blog,
                             )
                         }
                     }
@@ -473,18 +574,18 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                     };
                     match app_entry {
-                        EntryTypes::Name(name) => {
-                            let result = validate_create_name(
+                        EntryTypes::PeopleProfile(people_profile) => {
+                            let result = validate_create_people_profile(
                                 EntryCreationAction::Update(action.clone()),
-                                name.clone(),
+                                people_profile.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
-                                let original_name: Option<Name> = original_record
+                                let original_people_profile: Option<PeopleProfile> = original_record
                                     .entry()
                                     .to_app_option()
                                     .map_err(|e| wasm_error!(e))?;
-                                let original_name = match original_name {
-                                    Some(name) => name,
+                                let original_people_profile = match original_people_profile {
+                                    Some(people_profile) => people_profile,
                                     None => {
                                         return Ok(
                                             ValidateCallbackResult::Invalid(
@@ -494,28 +595,28 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                         );
                                     }
                                 };
-                                validate_update_name(
+                                validate_update_people_profile(
                                     action,
-                                    name,
+                                    people_profile,
                                     original_action,
-                                    original_name,
+                                    original_people_profile,
                                 )
                             } else {
                                 Ok(result)
                             }
                         }
-                        EntryTypes::Listing(listing) => {
-                            let result = validate_create_listing(
+                        EntryTypes::HealthForum(health_forum) => {
+                            let result = validate_create_health_forum(
                                 EntryCreationAction::Update(action.clone()),
-                                listing.clone(),
+                                health_forum.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
-                                let original_listing: Option<Listing> = original_record
+                                let original_health_forum: Option<HealthForum> = original_record
                                     .entry()
                                     .to_app_option()
                                     .map_err(|e| wasm_error!(e))?;
-                                let original_listing = match original_listing {
-                                    Some(listing) => listing,
+                                let original_health_forum = match original_health_forum {
+                                    Some(health_forum) => health_forum,
                                     None => {
                                         return Ok(
                                             ValidateCallbackResult::Invalid(
@@ -525,28 +626,28 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                         );
                                     }
                                 };
-                                validate_update_listing(
+                                validate_update_health_forum(
                                     action,
-                                    listing,
+                                    health_forum,
                                     original_action,
-                                    original_listing,
+                                    original_health_forum,
                                 )
                             } else {
                                 Ok(result)
                             }
                         }
-                        EntryTypes::ListingFormat(listing_format) => {
-                            let result = validate_create_listing_format(
+                        EntryTypes::HealthBlog(health_blog) => {
+                            let result = validate_create_health_blog(
                                 EntryCreationAction::Update(action.clone()),
-                                listing_format.clone(),
+                                health_blog.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
-                                let original_listing_format: Option<ListingFormat> = original_record
+                                let original_health_blog: Option<HealthBlog> = original_record
                                     .entry()
                                     .to_app_option()
                                     .map_err(|e| wasm_error!(e))?;
-                                let original_listing_format = match original_listing_format {
-                                    Some(listing_format) => listing_format,
+                                let original_health_blog = match original_health_blog {
+                                    Some(health_blog) => health_blog,
                                     None => {
                                         return Ok(
                                             ValidateCallbackResult::Invalid(
@@ -556,28 +657,28 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                         );
                                     }
                                 };
-                                validate_update_listing_format(
+                                validate_update_health_blog(
                                     action,
-                                    listing_format,
+                                    health_blog,
                                     original_action,
-                                    original_listing_format,
+                                    original_health_blog,
                                 )
                             } else {
                                 Ok(result)
                             }
                         }
-                        EntryTypes::Profile(profile) => {
-                            let result = validate_create_profile(
+                        EntryTypes::HBlog(h_blog) => {
+                            let result = validate_create_h_blog(
                                 EntryCreationAction::Update(action.clone()),
-                                profile.clone(),
+                                h_blog.clone(),
                             )?;
                             if let ValidateCallbackResult::Valid = result {
-                                let original_profile: Option<Profile> = original_record
+                                let original_h_blog: Option<HBlog> = original_record
                                     .entry()
                                     .to_app_option()
                                     .map_err(|e| wasm_error!(e))?;
-                                let original_profile = match original_profile {
-                                    Some(profile) => profile,
+                                let original_h_blog = match original_h_blog {
+                                    Some(h_blog) => h_blog,
                                     None => {
                                         return Ok(
                                             ValidateCallbackResult::Invalid(
@@ -587,11 +688,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                         );
                                     }
                                 };
-                                validate_update_profile(
+                                validate_update_h_blog(
                                     action,
-                                    profile,
+                                    h_blog,
                                     original_action,
-                                    original_profile,
+                                    original_h_blog,
                                 )
                             } else {
                                 Ok(result)
@@ -651,28 +752,32 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                     };
                     match original_app_entry {
-                        EntryTypes::Name(original_name) => {
-                            validate_delete_name(action, original_action, original_name)
-                        }
-                        EntryTypes::Listing(original_listing) => {
-                            validate_delete_listing(
+                        EntryTypes::PeopleProfile(original_people_profile) => {
+                            validate_delete_people_profile(
                                 action,
                                 original_action,
-                                original_listing,
+                                original_people_profile,
                             )
                         }
-                        EntryTypes::ListingFormat(original_listing_format) => {
-                            validate_delete_listing_format(
+                        EntryTypes::HealthForum(original_health_forum) => {
+                            validate_delete_health_forum(
                                 action,
                                 original_action,
-                                original_listing_format,
+                                original_health_forum,
                             )
                         }
-                        EntryTypes::Profile(original_profile) => {
-                            validate_delete_profile(
+                        EntryTypes::HealthBlog(original_health_blog) => {
+                            validate_delete_health_blog(
                                 action,
                                 original_action,
-                                original_profile,
+                                original_health_blog,
+                            )
+                        }
+                        EntryTypes::HBlog(original_h_blog) => {
+                            validate_delete_h_blog(
+                                action,
+                                original_action,
+                                original_h_blog,
                             )
                         }
                     }
@@ -685,88 +790,56 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     action,
                 } => {
                     match link_type {
-                        LinkTypes::NameUpdates => {
-                            validate_create_link_name_updates(
+                        LinkTypes::PersonToPeopleProfiles => {
+                            validate_create_link_person_to_people_profiles(
                                 action,
                                 base_address,
                                 target_address,
                                 tag,
                             )
                         }
-                        LinkTypes::AllPosts => {
-                            validate_create_link_all_posts(
+                        LinkTypes::PeopleProfileUpdates => {
+                            validate_create_link_people_profile_updates(
                                 action,
                                 base_address,
                                 target_address,
                                 tag,
                             )
                         }
-                        LinkTypes::CreatorToListings => {
-                            validate_create_link_creator_to_listings(
+                        LinkTypes::AllPeopleProfiles => {
+                            validate_create_link_all_people_profiles(
                                 action,
                                 base_address,
                                 target_address,
                                 tag,
                             )
                         }
-                        LinkTypes::ListingUpdates => {
-                            validate_create_link_listing_updates(
+                        LinkTypes::CreatorToHealthForums => {
+                            validate_create_link_creator_to_health_forums(
                                 action,
                                 base_address,
                                 target_address,
                                 tag,
                             )
                         }
-                        LinkTypes::AllListings => {
-                            validate_create_link_all_listings(
+                        LinkTypes::PeopleProfileToHealthForums => {
+                            validate_create_link_people_profile_to_health_forums(
                                 action,
                                 base_address,
                                 target_address,
                                 tag,
                             )
                         }
-                        LinkTypes::ListingsByCreator => {
-                            validate_create_link_listings_by_creator(
+                        LinkTypes::HealthForumUpdates => {
+                            validate_create_link_health_forum_updates(
                                 action,
                                 base_address,
                                 target_address,
                                 tag,
                             )
                         }
-                        LinkTypes::ListingToListingFormats => {
-                            validate_create_link_listing_to_listing_formats(
-                                action,
-                                base_address,
-                                target_address,
-                                tag,
-                            )
-                        }
-                        LinkTypes::ListingFormatUpdates => {
-                            validate_create_link_listing_format_updates(
-                                action,
-                                base_address,
-                                target_address,
-                                tag,
-                            )
-                        }
-                        LinkTypes::PersonToProfiles => {
-                            validate_create_link_person_to_profiles(
-                                action,
-                                base_address,
-                                target_address,
-                                tag,
-                            )
-                        }
-                        LinkTypes::ProfileUpdates => {
-                            validate_create_link_profile_updates(
-                                action,
-                                base_address,
-                                target_address,
-                                tag,
-                            )
-                        }
-                        LinkTypes::AllProfiles => {
-                            validate_create_link_all_profiles(
+                        LinkTypes::AllHealthForum => {
+                            validate_create_link_all_health_forum(
                                 action,
                                 base_address,
                                 target_address,
@@ -775,6 +848,78 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::MyProfiles => {
                             validate_create_link_my_profiles(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::CreatorToHealthBlogs => {
+                            validate_create_link_creator_to_health_blogs(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::PeopleProfileToHealthBlogs => {
+                            validate_create_link_people_profile_to_health_blogs(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::HealthBlogUpdates => {
+                            validate_create_link_health_blog_updates(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::AllHealthBlogs => {
+                            validate_create_link_all_health_blogs(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::MyHealthBlogs => {
+                            validate_create_link_my_health_blogs(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::CreatorToHBlogs => {
+                            validate_create_link_creator_to_h_blogs(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::HBlogUpdates => {
+                            validate_create_link_h_blog_updates(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::AllHBlogs => {
+                            validate_create_link_all_h_blogs(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::MyHBlogs => {
+                            validate_create_link_my_h_blogs(
                                 action,
                                 base_address,
                                 target_address,
@@ -806,8 +951,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                     };
                     match link_type {
-                        LinkTypes::NameUpdates => {
-                            validate_delete_link_name_updates(
+                        LinkTypes::PersonToPeopleProfiles => {
+                            validate_delete_link_person_to_people_profiles(
                                 action,
                                 create_link.clone(),
                                 base_address,
@@ -815,8 +960,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.tag,
                             )
                         }
-                        LinkTypes::AllPosts => {
-                            validate_delete_link_all_posts(
+                        LinkTypes::PeopleProfileUpdates => {
+                            validate_delete_link_people_profile_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,
@@ -824,8 +969,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.tag,
                             )
                         }
-                        LinkTypes::CreatorToListings => {
-                            validate_delete_link_creator_to_listings(
+                        LinkTypes::AllPeopleProfiles => {
+                            validate_delete_link_all_people_profiles(
                                 action,
                                 create_link.clone(),
                                 base_address,
@@ -833,8 +978,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.tag,
                             )
                         }
-                        LinkTypes::ListingUpdates => {
-                            validate_delete_link_listing_updates(
+                        LinkTypes::CreatorToHealthForums => {
+                            validate_delete_link_creator_to_health_forums(
                                 action,
                                 create_link.clone(),
                                 base_address,
@@ -842,8 +987,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.tag,
                             )
                         }
-                        LinkTypes::AllListings => {
-                            validate_delete_link_all_listings(
+                        LinkTypes::PeopleProfileToHealthForums => {
+                            validate_delete_link_people_profile_to_health_forums(
                                 action,
                                 create_link.clone(),
                                 base_address,
@@ -851,8 +996,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.tag,
                             )
                         }
-                        LinkTypes::ListingsByCreator => {
-                            validate_delete_link_listings_by_creator(
+                        LinkTypes::HealthForumUpdates => {
+                            validate_delete_link_health_forum_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,
@@ -860,44 +1005,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.tag,
                             )
                         }
-                        LinkTypes::ListingToListingFormats => {
-                            validate_delete_link_listing_to_listing_formats(
-                                action,
-                                create_link.clone(),
-                                base_address,
-                                create_link.target_address,
-                                create_link.tag,
-                            )
-                        }
-                        LinkTypes::ListingFormatUpdates => {
-                            validate_delete_link_listing_format_updates(
-                                action,
-                                create_link.clone(),
-                                base_address,
-                                create_link.target_address,
-                                create_link.tag,
-                            )
-                        }
-                        LinkTypes::PersonToProfiles => {
-                            validate_delete_link_person_to_profiles(
-                                action,
-                                create_link.clone(),
-                                base_address,
-                                create_link.target_address,
-                                create_link.tag,
-                            )
-                        }
-                        LinkTypes::ProfileUpdates => {
-                            validate_delete_link_profile_updates(
-                                action,
-                                create_link.clone(),
-                                base_address,
-                                create_link.target_address,
-                                create_link.tag,
-                            )
-                        }
-                        LinkTypes::AllProfiles => {
-                            validate_delete_link_all_profiles(
+                        LinkTypes::AllHealthForum => {
+                            validate_delete_link_all_health_forum(
                                 action,
                                 create_link.clone(),
                                 base_address,
@@ -907,6 +1016,87 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::MyProfiles => {
                             validate_delete_link_my_profiles(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::CreatorToHealthBlogs => {
+                            validate_delete_link_creator_to_health_blogs(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::PeopleProfileToHealthBlogs => {
+                            validate_delete_link_people_profile_to_health_blogs(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::HealthBlogUpdates => {
+                            validate_delete_link_health_blog_updates(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::AllHealthBlogs => {
+                            validate_delete_link_all_health_blogs(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::MyHealthBlogs => {
+                            validate_delete_link_my_health_blogs(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::CreatorToHBlogs => {
+                            validate_delete_link_creator_to_h_blogs(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::HBlogUpdates => {
+                            validate_delete_link_h_blog_updates(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::AllHBlogs => {
+                            validate_delete_link_all_h_blogs(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::MyHBlogs => {
+                            validate_delete_link_my_h_blogs(
                                 action,
                                 create_link.clone(),
                                 base_address,

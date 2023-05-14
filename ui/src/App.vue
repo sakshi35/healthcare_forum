@@ -1,27 +1,29 @@
 <template>
   <div>
-    <div>
-      <!-- Navigation bar -->
-      <nav>
-        <ul>
-          <li @click="selectedTab = 'allBlogs'" :class="{ active: selectedTab === 'allBlogs' }">All Blogs</li>
-          <li @click="selectedTab = 'createBlog'" :class="{ active: selectedTab === 'createBlog' }">Create Blog</li>
-          <li @click="selectedTab = 'allProfiles'" :class="{ active: selectedTab === 'allProfiles' }">All Profiles</li>
-          <li @click="selectedTab = 'createProfile'" :class="{ active: selectedTab === 'createProfile' }">Create Profile</li>
-        </ul>
-      </nav>
-    </div>
     <div v-if="loading">
       <mwc-circular-progress indeterminate></mwc-circular-progress>
     </div>
     <div v-else>
       <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-        <AllListings v-if="selectedTab === 'allBlogs'"></AllListings>
-        <CreateListing v-else-if="selectedTab === 'createBlog'" creator={}></CreateListing>
-        <CreateProfile v-else-if="selectedTab === 'createProfile'" person={}></CreateProfile>
-        <AllProfiles v-else-if="selectedTab === 'allProfiles'" person={}></AllProfiles>
-        <CreateListingFormat listing-hash={}></CreateListingFormat>
-        <ListingsByCreator :author="authorData"></ListingsByCreator>
+        <div v-if="isProfileCreated">
+          <div>
+          <nav>
+            <ul>
+              <li @click="selectedTab = 'allBlogs'" :class="{ active: selectedTab === 'allBlogs' }">All Blogs</li>
+              <li @click="selectedTab = 'createBlog'" :class="{ active: selectedTab === 'createBlog' }">Create Blog</li>
+              <li @click="selectedTab = 'myblogs'" :class="{ active: selectedTab === 'myblogs' }">My Blogs</li>
+              <li @click="selectedTab = 'myProfiles'" :class="{ active: selectedTab === 'myProfiles' }">My Profile</li>
+            </ul>
+          </nav>
+        </div>
+          <CreateHBlog v-if="selectedTab === 'createBlog'" :creator="authorData" ></CreateHBlog>
+          <AllHBlogs v-else-if="selectedTab === 'allBlogs'" ></AllHBlogs>
+          <MyProfiles v-else-if="selectedTab === 'myProfiles'" :author="authorData"></MyProfiles>
+          <MyHBlogs v-else-if="selectedTab === 'myblogs'" :author="authorData"></MyHBlogs>
+        </div>
+        <div v-else>
+          <CreatePeopleProfile @people-profile-created="handleProfileCreated" :person="authorData"></CreatePeopleProfile>
+        </div>
       </div>
     </div>
   </div>
@@ -30,35 +32,40 @@
 import { defineComponent, computed } from 'vue';
 import { AppAgentClient, AppAgentWebsocket } from '@holochain/client';
 import '@material/mwc-circular-progress';
-import AllListings from './blog/blog/AllListings.vue';
-import CreateListing from './blog/blog/CreateListing.vue';
-import CreateProfile from './blog/blog/CreateProfile.vue';
-import AllProfiles from './blog/blog/AllProfiles.vue';
-import CreateListingFormat from './blog/blog/CreateListingFormat.vue';
-import ListingsByCreator from './blog/blog/ListingsByCreator.vue';
+import CreateHBlog from './forum/forum/CreateHBlog.vue';
+import AllHBlogs from './forum/forum/AllHBlogs.vue';
+import MyHBlogs from './forum/forum/MyHBlogs.vue';
+import CreatePeopleProfile from './forum/forum/CreatePeopleProfile.vue';
+import MyProfiles from './forum/forum/MyProfiles.vue';
+import {EntryHash} from '@holochain/client';
 
 
 export default defineComponent({
   components: {
     // Add your subcomponents here
-    AllListings,
-    CreateListing,
-    CreateProfile,
-    AllProfiles,
-    CreateListingFormat,
-    ListingsByCreator,
+    CreateHBlog,
+    AllHBlogs,
+    CreatePeopleProfile,
+    MyProfiles,
+    MyHBlogs,
   },
   data(): {
     client: AppAgentClient | undefined;
     loading: boolean;
-    selectedTab: 'allBlogs' | 'createBlog' | 'allProfiles' | 'createProfile';
+    selectedTab: 'allBlogs' | 'createBlog' | 'myProfiles' | 'createProfile' | 'myblogs';
     authorData: Object;
+    isProfileCreated: boolean;
+    //profileHash: EntryHash;
+    profileName: string;
   } {
     return {
       client: undefined,
       loading: true,
       selectedTab: 'allBlogs',
       authorData: {},
+      isProfileCreated: false,
+      //profileHash: new Uint8Array(0) as EntryHash,
+      profileName: "",
     };
   },
   async mounted() {
@@ -72,6 +79,16 @@ export default defineComponent({
       client: computed(() => this.client),
       //myPubKey: computed(() => this.client?.myPubKey),
     };
+  },
+  methods: {
+    async handleProfileCreated(hash: EntryHash) {
+      // ... your logic to handle the profile creation
+      //console.log("profileName: "+profileName);
+      //this.profileName = profileName;
+      console.log("hash: "+hash);
+      //this.profileHash = hash;
+      this.isProfileCreated = true;
+    },
   },
 });
 </script>
